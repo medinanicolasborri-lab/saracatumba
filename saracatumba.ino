@@ -20,7 +20,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 #define B_LEFT    2
 #define B_RIGHT   3
 #define B_A       4
-#define B_B       5   // OJO: este es el boton que acepta, lanza y reintenta, y en pantalla se muestra como "A"
+#define B_B       5  
 #define B_MENU    6
 int PINES[7] = {BTN_UP, BTN_DOWN, BTN_LEFT, BTN_RIGHT, BTN_A, BTN_B, BTN_MENU};
 bool btnAhora[7];
@@ -48,7 +48,6 @@ void leerBotones() {
   for (int i = 0; i < 7; i++) {
     btnAntes[i] = btnAhora[i];
     bool lectura = (digitalRead(PINES[i]) == LOW);
-    // solo aceptamos el cambio si pasaron 20 ms desde el ultimo (antirrebote)
     if (lectura != btnAhora[i] && ahora - btnTiempo[i] > 20) {
       btnAhora[i] = lectura;
       btnTiempo[i] = ahora;}}}
@@ -224,13 +223,13 @@ void loopSnake() {
       snakeGameOver(); return;}
     for (int i = 0; i < snLargo; i++) if (snX[i]==nx && snY[i]==ny) { snakeGameOver(); return; }
     bool comer = (nx==snComX && ny==snComY);
-    int colaX = snX[snLargo-1], colaY = snY[snLargo-1];   // guardo la cola vieja antes de mover
+    int colaX = snX[snLargo-1], colaY = snY[snLargo-1];  
     if (!comer) tft.fillRect(SN_X0+colaX*SN_CELDA, SN_Y0+colaY*SN_CELDA, SN_CELDA-1, SN_CELDA-1, COL_FONDO);
     for (int i = snLargo-1; i > 0; i--) { snX[i]=snX[i-1]; snY[i]=snY[i-1]; }
     snX[0]=nx; snY[0]=ny;
     tft.fillRect(SN_X0+nx*SN_CELDA, SN_Y0+ny*SN_CELDA, SN_CELDA-1, SN_CELDA-1, COL_VERDE);
     if (comer) {
-      snX[snLargo] = colaX; snY[snLargo] = colaY;   // la cola vieja pasa a ser el ultimo segmento nuevo
+      snX[snLargo] = colaX; snY[snLargo] = colaY;   
       snLargo++; snPuntos += 10; sonidoComer();
       char b[16]; sprintf(b, "PUNTOS:%d", snPuntos); texto(10, 20, 2, COL_VERDE, COL_FONDO, b);
       do { snComX = random(0,SN_ANCHO); snComY = random(0,SN_ALTO); bool ok=true; for(int i=0;i<snLargo;i++) if(snX[i]==snComX&&snY[i]==snComY) ok=false; if(ok) break; } while(true);
@@ -243,9 +242,7 @@ void loopSnake() {
 #define TE_CELDA 12
 #define TE_X0 60
 #define TE_Y0 34
-// Piezas en matrices 4x4 con 0 y 1
-// piezas[pieza][rotacion][fila][columna]
-// Solo escribimos la rotacion 0; las otras 3 las calcula rotarPiezas()
+
 int piezas[7][4][4][4] = {
   {{{1,0,0,0},{1,0,0,0},{1,0,0,0},{1,0,0,0}}},
   {{{1,1,0,0},{1,1,0,0},{0,0,0,0},{0,0,0,0}}},
@@ -254,18 +251,18 @@ int piezas[7][4][4][4] = {
   {{{1,1,0,0},{0,1,1,0},{0,0,0,0},{0,0,0,0}}},
   {{{1,0,0,0},{1,1,1,0},{0,0,0,0},{0,0,0,0}}},
   {{{0,0,1,0},{1,1,1,0},{0,0,0,0},{0,0,0,0}}}};
-//  ROTAR PIEZAS DE TETRIS (crea las 4 rotaciones de cada pieza)
+
 void rotarPiezas() {
   for (int p = 0; p < 7; p++) {
     for (int r = 1; r < 4; r++) {
-      // girar 90 grados la rotacion anterior
+      
       int nuevo[4][4];
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           nuevo[i][j] = piezas[p][r-1][3 - j][i];
         }
       }
-      // buscar la esquina de arriba a la izquierda de la figura
+      
       int filaMin = 3;
       int colMin = 3;
       for (int i = 0; i < 4; i++) {
@@ -276,7 +273,7 @@ void rotarPiezas() {
           }
         }
       }
-      // guardarla pegada a esa esquina
+      
       for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
           piezas[p][r][i][j] = 0;
@@ -296,11 +293,11 @@ int teTipo = 0, teRot = 0, teX = 3, teY = 0;
 int tePts = 0, teLin = 0;
 bool teVivo = true, tePausa = false;
 unsigned long teCaida = 0;
-#define TE_REP_INICIAL 180   // ms que hay que mantener IZQ/DER antes de que empiece a repetir
-#define TE_REP_VEL      70   // ms entre cada paso mientras se mantiene (mas chico = mas rapido)
+#define TE_REP_INICIAL 180   
+#define TE_REP_VEL      70  
 unsigned long teMovT = 0;
 int teMovDir = 0;
-// Puntaje y lineas en la columna izquierda (no pisan el titulo)
+
 void teInfo() {
   static bool grande = false;
   char b[16];
@@ -383,22 +380,22 @@ void loopTetris() {
     if (pres(B_B)) iniciarTetris();
     if (pres(B_MENU)) { melParar(); pantalla = MENU; dibujarMenu(); }
     return;}
-  // ABAJO pausa y reanuda (la musica tambien se detiene y sigue donde estaba)
+ 
   if (pres(B_DOWN)) {
     tePausa = !tePausa;
     if (tePausa) {
       melParar();
       textoCentro(150, 3, COL_AMARILLO, COL_FONDO, "PAUSA");
     } else {
-      tft.fillRect(TE_X0, TE_Y0, TE_COLS*TE_CELDA, TE_FILAS*TE_CELDA, COL_FONDO);   // borra el cartel PAUSA
-      teDibujar();                                  // repinta el tablero
+      tft.fillRect(TE_X0, TE_Y0, TE_COLS*TE_CELDA, TE_FILAS*TE_CELDA, COL_FONDO);   
+      teDibujar();                                  
       tePiezaDibujar(teColor[teTipo]);
       melActivo = true; melSiguiente = millis();
       teCaida = millis();
     }
   }
   if (tePausa) return;
-  // A gira en sentido antihorario y B en sentido horario
+ 
   if (pres(B_A) || pres(B_B)) {
     int nr = pres(B_A) ? (teRot + 3) % 4 : (teRot + 1) % 4;
     if (!teChoque(nr, teX, teY)) {
@@ -406,7 +403,7 @@ void loopTetris() {
       teRot = nr;
       tePiezaDibujar(teColor[teTipo]);
       sonidoRotar();}}
-  // IZQUIERDA / DERECHA: un paso al apretar y, si se mantiene apretado, la pieza sigue sola
+  
   int dir = 0;
   if (mant(B_LEFT) && !mant(B_RIGHT)) dir = -1;
   else if (mant(B_RIGHT) && !mant(B_LEFT)) dir = 1;
@@ -415,14 +412,14 @@ void loopTetris() {
   } else {
     unsigned long ahora = millis();
     bool mover = false;
-    if (dir != teMovDir) {                 // recien se aprieta (o se cambio de lado)
+    if (dir != teMovDir) {                
       teMovDir = dir; teMovT = ahora + TE_REP_INICIAL; mover = true;
-    } else if (ahora >= teMovT) {          // lo mantiene apretado: repetir
+    } else if (ahora >= teMovT) {         
       teMovT = ahora + TE_REP_VEL; mover = true;
     }
     if (mover && !teChoque(teRot, teX + dir, teY)) { tePiezaDibujar(COL_FONDO); teX += dir; tePiezaDibujar(teColor[teTipo]); }
   }
-  // ARRIBA suelta la pieza de golpe
+  
   if (pres(B_UP)) {
     tePiezaDibujar(COL_FONDO);
     while (!teChoque(teRot, teX, teY+1)) { teY++; tePts += 2; }
@@ -443,9 +440,9 @@ void loopTetris() {
 #define BO_PANW  46
 #define BO_PANH  7
 #define BO_PANY  300
-#define BO_VEL_BOLA 20   // ms entre cada paso de la pelota (mas grande = mas lenta)
-#define BO_VEL_PALA 20   // ms entre cada paso de la paleta (mas grande = mas lenta)
-#define BO_PASO_PALA 3   // pixeles que avanza la paleta en cada paso (mas chico = menos sensible)
+#define BO_VEL_BOLA 20  
+#define BO_VEL_PALA 20  
+#define BO_PASO_PALA 3  
 unsigned long boTiempo = 0, boPalaTiempo = 0;
 bool boLad[BO_FILAS][BO_COLS];
 int boPanX = 97;
@@ -454,7 +451,7 @@ int boPts = 0, boVidas = 3;
 bool boVivo = true, boLanz = false, boPausa = false;
 int boColLad[5] = {COL_ROJO, COL_NARANJA, COL_AMARILLO, COL_VERDE, COL_CYAN};
 void boInfo() {
-  // puntos a la izquierda y vidas a la derecha, para no pisar el titulo centrado
+  
   char b[16];
   sprintf(b,"PUNTOS:%d",boPts); texto(4,6,1,COL_TEXTO,COL_FONDO,b);
   sprintf(b,"VIDAS:%d",boVidas); texto(194,6,1,COL_TEXTO,COL_FONDO,b);}
@@ -486,7 +483,7 @@ void loopBreakout() {
       tft.fillCircle(boX, boY, 3, COL_TEXTO);}
   }
   if (boPausa) return;
-  // la paleta se mueve un paso cada BO_VEL_PALA ms, sin importar que tan rapido corra el loop
+  
   if (millis() - boPalaTiempo >= BO_VEL_PALA) {
     boPalaTiempo = millis();
     if (mant(B_LEFT) && boPanX > 2) { tft.fillRect(boPanX, BO_PANY, BO_PANW, BO_PANH, COL_FONDO); boPanX -= BO_PASO_PALA; if (boPanX < 2) boPanX = 2; tft.fillRect(boPanX, BO_PANY, BO_PANW, BO_PANH, COL_AZUL); }
@@ -498,12 +495,12 @@ void loopBreakout() {
     tft.fillCircle(boX,boY,3,COL_TEXTO);
     if (pres(B_B)) { boLanz = true; boVX = 1; boVY = -2; boTiempo = millis(); tft.fillRect(50,186,140,44,COL_FONDO); sonidoComer(); }
     return;}
-  // Mover pelota: un paso cada BO_VEL_BOLA ms, sin importar que tan rapido corra el loop
+  
   if (millis() - boTiempo < BO_VEL_BOLA) return;
   boTiempo = millis();
   tft.fillCircle(boX,boY,4,COL_FONDO);
   boX += boVX; boY += boVY;
-  // limites algo mas adentro para que al borrar el rastro no se borre el marco
+  
   if (boX <= 5 || boX >= 234) { boVX = -boVX; sonidoGolpe(); }
   if (boY <= 27) { boVY = -boVY; sonidoGolpe(); }
   if (boVY > 0 && boY >= BO_PANY-3 && boY <= BO_PANY+BO_PANH && boX >= boPanX && boX <= boPanX+BO_PANW) {
@@ -536,7 +533,7 @@ void loopBreakout() {
         r = BO_FILAS; c = BO_COLS;}}}
   if (boY > 315) {
     boVidas--;
-    tft.drawRect(0,22,240,296,COL_GRIS);  // la pelota, al salir, borra un pedazo del marco
+    tft.drawRect(0,22,240,296,COL_GRIS);  
     boInfo(); sonidoGolpe();
     if (boVidas <= 0) {
       boVivo = false;
